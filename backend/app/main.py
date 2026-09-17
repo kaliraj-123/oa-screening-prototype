@@ -9,7 +9,7 @@ from typing import Optional, Dict, Any
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 
 from app.utils.preprocessing import calculate_bmi, generate_patient_id
 from app.services.xray_service import process_xray_upload, UPLOAD_DIR_XRAY
@@ -83,8 +83,13 @@ for rec in _DEMO_INITIAL_RECORDS:
     }
 
 
-@app.get("/", tags=["General"])
+@app.get("/", include_in_schema=False)
 async def root():
+    return RedirectResponse(url="/app/", status_code=307)
+
+
+@app.get("/api", tags=["General"])
+async def api_info():
     return {
         "system": "AI-Based Multimodal Osteoarthritis Screening and Risk Assessment System",
         "version": "1.0.0",

@@ -9,7 +9,10 @@ from app.utils.preprocessing import validate_xray_file
 from app.ai.xray_model import analyze_xray
 
 
-UPLOAD_DIR_XRAY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "xray"))
+if os.environ.get("VERCEL"):
+    UPLOAD_DIR_XRAY = "/tmp/uploads/xray"
+else:
+    UPLOAD_DIR_XRAY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "xray"))
 os.makedirs(UPLOAD_DIR_XRAY, exist_ok=True)
 
 

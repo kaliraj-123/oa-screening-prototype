@@ -28,10 +28,14 @@ client = TestClient(app)
 def test_all():
     print("=== Testing FastAPI Endpoints ===")
 
-    # 1. GET /
-    r = client.get("/")
-    assert r.status_code == 200, f"GET / failed: {r.status_code}"
-    print("[PASS] GET / ->", r.json().get("system"))
+    # 1. GET / (Redirects to /app/) and GET /api
+    r = client.get("/", follow_redirects=False)
+    assert r.status_code in (307, 302, 308), f"GET / redirect failed: {r.status_code}"
+    print("[PASS] GET / -> Redirects to", r.headers.get("location"))
+
+    r_api = client.get("/api")
+    assert r_api.status_code == 200, f"GET /api failed: {r_api.status_code}"
+    print("[PASS] GET /api ->", r_api.json().get("system"))
 
     # 2. GET /health
     r = client.get("/health")

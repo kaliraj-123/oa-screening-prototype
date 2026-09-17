@@ -9,7 +9,10 @@ from app.utils.preprocessing import validate_movement_file
 from app.ai.gait_model import analyze_gait
 
 
-UPLOAD_DIR_MOVEMENT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "movement"))
+if os.environ.get("VERCEL"):
+    UPLOAD_DIR_MOVEMENT = "/tmp/uploads/movement"
+else:
+    UPLOAD_DIR_MOVEMENT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "uploads", "movement"))
 os.makedirs(UPLOAD_DIR_MOVEMENT, exist_ok=True)
 
 
