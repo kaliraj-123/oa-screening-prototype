@@ -115,20 +115,34 @@ function initFileDropzones() {
     const xrayPreview = document.getElementById("xrayPreview");
     const xrayPreviewContainer = document.getElementById("xrayPreviewContainer");
     const xrayFileName = document.getElementById("xrayFileName");
+    const btnSelectXray = document.getElementById("btnSelectXray");
 
-    xrayInput.addEventListener("change", (e) => {
-        if (e.target.files && e.target.files[0]) {
-            handleXrayFile(e.target.files[0]);
-        }
-    });
+    if (xrayDropzone && xrayInput) {
+        xrayDropzone.addEventListener("click", (e) => {
+            if (e.target !== xrayInput) {
+                xrayInput.click();
+            }
+        });
 
-    setupDragDrop(xrayDropzone, handleXrayFile);
+        xrayInput.addEventListener("click", (e) => {
+            e.stopPropagation();
+            xrayInput.value = "";
+        });
+
+        xrayInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleXrayFile(e.target.files[0]);
+            }
+        });
+
+        setupDragDrop(xrayDropzone, handleXrayFile);
+    }
 
     function handleXrayFile(file) {
-        const allowedExts = [".jpg", ".jpeg", ".png"];
+        const allowedExts = [".jpg", ".jpeg", ".png", ".webp", ".bmp", ".jfif"];
         const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
         if (!allowedExts.includes(ext)) {
-            alert("Please upload a valid knee X-ray image (.jpg, .jpeg, .png).");
+            alert(`Please upload a valid knee X-ray image (${allowedExts.join(", ")}).`);
             return;
         }
 
@@ -138,13 +152,19 @@ function initFileDropzones() {
         }
 
         selectedXrayFile = file;
-        xrayFileName.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
-        xrayFileName.style.display = "block";
+        if (xrayFileName) {
+            xrayFileName.textContent = `Selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+            xrayFileName.style.display = "block";
+        }
 
         const reader = new FileReader();
         reader.onload = (e) => {
-            xrayPreview.src = e.target.result;
-            xrayPreviewContainer.style.display = "flex";
+            if (xrayPreview) {
+                xrayPreview.src = e.target.result;
+            }
+            if (xrayPreviewContainer) {
+                xrayPreviewContainer.style.display = "flex";
+            }
         };
         reader.readAsDataURL(file);
     }
@@ -155,20 +175,34 @@ function initFileDropzones() {
     const videoPreview = document.getElementById("videoPreview");
     const videoPreviewContainer = document.getElementById("videoPreviewContainer");
     const videoFileName = document.getElementById("videoFileName");
+    const btnSelectVideo = document.getElementById("btnSelectVideo");
 
-    videoInput.addEventListener("change", (e) => {
-        if (e.target.files && e.target.files[0]) {
-            handleVideoFile(e.target.files[0]);
-        }
-    });
+    if (videoDropzone && videoInput) {
+        videoDropzone.addEventListener("click", (e) => {
+            if (e.target !== videoInput) {
+                videoInput.click();
+            }
+        });
 
-    setupDragDrop(videoDropzone, handleVideoFile);
+        videoInput.addEventListener("click", (e) => {
+            e.stopPropagation();
+            videoInput.value = "";
+        });
+
+        videoInput.addEventListener("change", (e) => {
+            if (e.target.files && e.target.files[0]) {
+                handleVideoFile(e.target.files[0]);
+            }
+        });
+
+        setupDragDrop(videoDropzone, handleVideoFile);
+    }
 
     function handleVideoFile(file) {
-        const allowedExts = [".mp4", ".mov", ".avi"];
+        const allowedExts = [".mp4", ".mov", ".avi", ".webm", ".mkv", ".ogv"];
         const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase();
         if (!allowedExts.includes(ext)) {
-            alert("Please upload a valid knee movement video (.mp4, .mov, .avi).");
+            alert(`Please upload a valid knee movement video (${allowedExts.join(", ")}).`);
             return;
         }
 
@@ -178,12 +212,19 @@ function initFileDropzones() {
         }
 
         selectedVideoFile = file;
-        videoFileName.textContent = `Selected: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
-        videoFileName.style.display = "block";
+        if (videoFileName) {
+            videoFileName.textContent = `Selected: ${file.name} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`;
+            videoFileName.style.display = "block";
+        }
 
         const fileUrl = URL.createObjectURL(file);
-        videoPreview.src = fileUrl;
-        videoPreviewContainer.style.display = "flex";
+        if (videoPreview) {
+            videoPreview.src = fileUrl;
+            videoPreview.load();
+        }
+        if (videoPreviewContainer) {
+            videoPreviewContainer.style.display = "flex";
+        }
     }
 
     function setupDragDrop(zone, fileHandler) {
@@ -247,10 +288,14 @@ async function loadDemoSample() {
             selectedXrayFile = xrayFile;
 
             const xrayPreview = document.getElementById("xrayPreview");
-            xrayPreview.src = URL.createObjectURL(xrayBlob);
-            document.getElementById("xrayPreviewContainer").style.display = "flex";
-            document.getElementById("xrayFileName").textContent = `Selected: sample_knee_xray.png (Demo Asset)`;
-            document.getElementById("xrayFileName").style.display = "block";
+            if (xrayPreview) xrayPreview.src = URL.createObjectURL(xrayBlob);
+            const xpc = document.getElementById("xrayPreviewContainer");
+            if (xpc) xpc.style.display = "flex";
+            const xfn = document.getElementById("xrayFileName");
+            if (xfn) {
+                xfn.textContent = `Selected: sample_knee_xray.png (Demo Asset)`;
+                xfn.style.display = "block";
+            }
         }
 
         // Fetch synthetic demo movement video
@@ -261,10 +306,17 @@ async function loadDemoSample() {
             selectedVideoFile = vidFile;
 
             const videoPreview = document.getElementById("videoPreview");
-            videoPreview.src = URL.createObjectURL(vidBlob);
-            document.getElementById("videoPreviewContainer").style.display = "flex";
-            document.getElementById("videoFileName").textContent = `Selected: sample_movement.mp4 (Demo Asset)`;
-            document.getElementById("videoFileName").style.display = "block";
+            if (videoPreview) {
+                videoPreview.src = URL.createObjectURL(vidBlob);
+                videoPreview.load();
+            }
+            const vpc = document.getElementById("videoPreviewContainer");
+            if (vpc) vpc.style.display = "flex";
+            const vfn = document.getElementById("videoFileName");
+            if (vfn) {
+                vfn.textContent = `Selected: sample_movement.mp4 (Demo Asset)`;
+                vfn.style.display = "block";
+            }
         }
     } catch (e) {
         console.warn("Could not automatically preload demo media files:", e);
@@ -275,21 +327,34 @@ async function loadDemoSample() {
 // 6. Screening Submission & Multi-Stage Animation
 // ----------------------------------------------------------------------------
 function initFormHandlers() {
-    document.getElementById("btnFillDemo").addEventListener("click", loadDemoSample);
+    const btnFillDemo = document.getElementById("btnFillDemo");
+    if (btnFillDemo) {
+        btnFillDemo.addEventListener("click", loadDemoSample);
+    }
 
-    document.getElementById("btnResetForm").addEventListener("click", () => {
-        document.getElementById("screeningForm").reset();
-        selectedXrayFile = null;
-        selectedVideoFile = null;
-        document.getElementById("xrayPreviewContainer").style.display = "none";
-        document.getElementById("videoPreviewContainer").style.display = "none";
-        document.getElementById("xrayFileName").style.display = "none";
-        document.getElementById("videoFileName").style.display = "none";
-        document.getElementById("resultsSection").style.display = "none";
-        initPatientId();
-        calculateBmi();
-        document.getElementById("painRange").dispatchEvent(new Event("input"));
-    });
+    const btnResetForm = document.getElementById("btnResetForm");
+    if (btnResetForm) {
+        btnResetForm.addEventListener("click", () => {
+            const screeningForm = document.getElementById("screeningForm");
+            if (screeningForm) screeningForm.reset();
+            selectedXrayFile = null;
+            selectedVideoFile = null;
+            const xpc = document.getElementById("xrayPreviewContainer");
+            if (xpc) xpc.style.display = "none";
+            const vpc = document.getElementById("videoPreviewContainer");
+            if (vpc) vpc.style.display = "none";
+            const xfn = document.getElementById("xrayFileName");
+            if (xfn) xfn.style.display = "none";
+            const vfn = document.getElementById("videoFileName");
+            if (vfn) vfn.style.display = "none";
+            const rs = document.getElementById("resultsSection");
+            if (rs) rs.style.display = "none";
+            initPatientId();
+            calculateBmi();
+            const painRange = document.getElementById("painRange");
+            if (painRange) painRange.dispatchEvent(new Event("input"));
+        });
+    }
 
     document.getElementById("screeningForm").addEventListener("submit", async (e) => {
         e.preventDefault();

@@ -278,39 +278,49 @@
                 <!-- Right Column: X-Ray & Movement Video Uploads -->
                 <div class="col-lg-6">
 
-                 <!-- Card 3: Live Knee X-Ray Input -->
-<div class="card-healthcare">
-    <div class="card-header">
-        <span><i class="bi bi-file-earmark-medical me-2 text-primary"></i>3. Live Knee X-Ray Input</span>
-        <span class="badge bg-light text-dark border">Live Hardware Feed</span>
-    </div>
-    <div class="card-body">
-        <div class="upload-dropzone" id="xrayDropzone">
-            <i class="bi bi-cloud-arrow-up upload-icon"></i>
-            <h6 class="fw-bold mb-1">Real-time knee X-ray received from connected hardware</h6>
-            <p class="text-muted small mb-2">Prototype mode: this area represents the live hardware X-ray feed</p>
-            <input type="file" id="xrayInput" accept=".jpg,.jpeg,.png" style="display: none;" required>
-            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('xrayInput').click()">Select X-Ray File</button>
-        </div>
-    </div>
-</div>
+                    <!-- Card 3: Knee X-Ray Input -->
+                    <div class="card-healthcare">
+                        <div class="card-header">
+                            <span><i class="bi bi-file-earmark-medical me-2 text-primary"></i>3. Knee X-Ray Input</span>
+                            <span class="badge bg-light text-dark border">Image Upload</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-dropzone" id="xrayDropzone">
+                                <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                                <h6 class="fw-bold mb-1">Upload or Drag &amp; Drop Knee X-Ray</h6>
+                                <p class="text-muted small mb-2">Click box or drop image here (.jpg, .jpeg, .png, .webp)</p>
+                                <input type="file" id="xrayInput" accept=".jpg,.jpeg,.png,.webp,.bmp" style="display: none;">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="btnSelectXray">Select X-Ray File</button>
+                                <div id="xrayFileName" class="mt-2 small text-primary fw-semibold" style="display: none;"></div>
+                            </div>
+                            <div class="upload-preview-container" id="xrayPreviewContainer" style="display: none;">
+                                <img id="xrayPreview" class="upload-preview-img" alt="Knee X-Ray Preview">
+                                <span class="upload-status-badge"><i class="bi bi-check-circle me-1"></i>X-Ray Selected</span>
+                            </div>
+                        </div>
+                    </div>
 
-<!-- Card 4: Live Knee Movement / Gait Input -->
-<div class="card-healthcare">
-    <div class="card-header">
-        <span><i class="bi bi-camera-video me-2 text-primary"></i>4. Live Knee Movement / Gait Input</span>
-        <span class="badge bg-light text-dark border">Live Hardware Feed</span>
-    </div>
-    <div class="card-body">
-        <div class="upload-dropzone" id="videoDropzone">
-            <i class="bi bi-film upload-icon"></i>
-            <h6 class="fw-bold mb-1">Real-time gait/movement video received from connected hardware</h6>
-            <p class="text-muted small mb-2">Prototype mode: this area represents the live hardware gait feed</p>
-            <input type="file" id="videoInput" accept=".mp4,.mov,.avi" style="display: none;" required>
-            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('videoInput').click()">Select Video File</button>
-        </div>
-    </div>
-</div>
+                    <!-- Card 4: Knee Movement / Gait Input -->
+                    <div class="card-healthcare">
+                        <div class="card-header">
+                            <span><i class="bi bi-camera-video me-2 text-primary"></i>4. Knee Movement / Gait Video</span>
+                            <span class="badge bg-light text-dark border">Video Upload</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="upload-dropzone" id="videoDropzone">
+                                <i class="bi bi-film upload-icon"></i>
+                                <h6 class="fw-bold mb-1">Upload or Drag &amp; Drop Gait Video</h6>
+                                <p class="text-muted small mb-2">Click box or drop video here (.mp4, .mov, .avi, .webm, .ogv)</p>
+                                <input type="file" id="videoInput" accept=".mp4,.mov,.avi,.webm,.mkv,.ogv" style="display: none;">
+                                <button type="button" class="btn btn-outline-primary btn-sm" id="btnSelectVideo">Select Video File</button>
+                                <div id="videoFileName" class="mt-2 small text-primary fw-semibold" style="display: none;"></div>
+                            </div>
+                            <div class="upload-preview-container" id="videoPreviewContainer" style="display: none;">
+                                <video id="videoPreview" class="upload-preview-video" controls playsinline muted></video>
+                                <span class="upload-status-badge"><i class="bi bi-check-circle me-1"></i>Video Selected</span>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Primary Action Button -->
                     <div class="d-grid gap-2">

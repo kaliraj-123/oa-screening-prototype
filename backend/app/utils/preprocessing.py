@@ -12,8 +12,8 @@ from PIL import Image
 MAX_XRAY_SIZE_BYTES = 10 * 1024 * 1024      # 10 MB
 MAX_VIDEO_SIZE_BYTES = 50 * 1024 * 1024     # 50 MB
 
-ALLOWED_XRAY_EXTENSIONS = {".jpg", ".jpeg", ".png"}
-ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi"}
+ALLOWED_XRAY_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".jfif"}
+ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".mov", ".avi", ".webm", ".mkv", ".ogv"}
 
 
 def generate_patient_id(prefix: str = "OA-2026") -> str:
