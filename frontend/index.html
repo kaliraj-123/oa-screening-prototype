@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Based Multimodal Osteoarthritis Screening System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Top Medical Header -->
+    <header class="medical-header">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h1><i class="bi bi-activity text-info me-2"></i>AI-Based Osteoarthritis Screening</h1>
+                    <p class="subtitle">Multimodal X-Ray, Clinical and Movement Assessment</p>
+                </div>
+                <div class="mt-2 mt-md-0 d-flex gap-2">
+                    <button class="btn btn-outline-light btn-sm" id="btnRefreshStats" title="Refresh Dashboard Stats">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Sync Stats
+                    </button>
+                    <a href="/docs" target="_blank" class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-file-code me-1"></i>API Docs
+                    </a>
+                </div>
+            </div>
+
+            <!-- Mandatory Non-Diagnosis Prototype Disclaimer -->
+            <div class="disclaimer-banner">
+                <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                <div>
+                    <strong>Research Prototype Notice:</strong> Prototype for research and demonstration. AI results are not a medical diagnosis. Further clinical evaluation is recommended.
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container my-4 flex-grow-1">
+
+        <!-- 1. Top Aggregate Dashboard -->
+        <section class="mb-4">
+            <div class="row g-3">
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-card">
+                        <div class="stat-title">Total Screenings</div>
+                        <div class="stat-value primary" id="statTotal">--</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-card">
+                        <div class="stat-title">Higher Risk</div>
+                        <div class="stat-value danger" id="statHigher">--</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-card">
+                        <div class="stat-title">Moderate Risk</div>
+                        <div class="stat-value warning" id="statModerate">--</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-card">
+                        <div class="stat-title">Lower Risk</div>
+                        <div class="stat-value success" id="statLower">--</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-card">
+                        <div class="stat-title">Pending Reviews</div>
+                        <div class="stat-value" id="statPending">--</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="stat-card">
+                        <div class="stat-title">Referrals</div>
+                        <div class="stat-value danger" id="statReferrals">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optional Chart Collapsible -->
+            <div class="card card-healthcare mt-3">
+                <div class="card-header py-2" data-bs-toggle="collapse" data-bs-target="#chartCollapse" style="cursor: pointer;">
+                    <span><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Risk Distribution Summary</span>
+                    <i class="bi bi-chevron-down text-muted"></i>
+                </div>
+                <div class="collapse show" id="chartCollapse">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 text-center">
+                                <div style="max-height: 160px; max-width: 160px; margin: 0 auto;">
+                                    <canvas id="riskChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <h6 class="fw-bold mb-2">Multimodal Risk Distribution</h6>
+                                <p class="text-muted small mb-1">Demonstrates proportion of screened cohort categorized by combined imaging, functional movement, and symptomatic severity.</p>
+                                <div class="d-flex gap-3 small mt-2">
+                                    <span><span class="badge bg-danger me-1">&bull;</span> Higher Risk</span>
+                                    <span><span class="badge bg-warning text-dark me-1">&bull;</span> Moderate Risk</span>
+                                    <span><span class="badge bg-success me-1">&bull;</span> Lower Risk</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form and Input Controls Section -->
+        <form id="screeningForm">
+            <div class="row g-4">
+                
+                <!-- Left Column: Patient Info & Clinical Symptoms -->
+                <div class="col-lg-6">
+                    
+                    <!-- Card 1: Patient Demographics -->
+                    <div class="card-healthcare">
+                        <div class="card-header">
+                            <span><i class="bi bi-person-vcard me-2 text-primary"></i>1. Patient Information</span>
+                            <button type="button" class="btn btn-demo" id="btnFillDemo">
+                                <i class="bi bi-lightning-charge-fill me-1 text-warning"></i>Load Demo Sample
+                            </button>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Patient Name</label>
+                                    <input type="text" class="form-control" id="patientName" required value="Demo Patient">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">Patient ID <span class="text-muted fw-normal">(Auto-Generated)</span></label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control bg-light" id="patientId" readonly>
+                                        <button class="btn btn-outline-secondary" type="button" id="btnRegenId" title="Generate New ID"><i class="bi bi-arrow-repeat"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="col-4">
+                                    <label class="form-label small fw-bold">Age</label>
+                                    <input type="number" class="form-control" id="patientAge" min="18" max="110" value="58" required>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label small fw-bold">Sex</label>
+                                    <select class="form-select" id="patientSex">
+                                        <option value="Female" selected>Female</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label small fw-bold">Symptom Duration</label>
+                                    <select class="form-select" id="symptomDuration">
+                                        <option value="< 6 months">&lt; 6 months</option>
+                                        <option value="6-12 months" selected>6-12 months</option>
+                                        <option value="1-3 years">1-3 years</option>
+                                        <option value="> 3 years">&gt; 3 years</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">Height (cm)</label>
+                                    <input type="number" class="form-control" id="patientHeight" value="162" step="0.5" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-bold">Weight (kg)</label>
+                                    <input type="number" class="form-control" id="patientWeight" value="74" step="0.5" required>
+                                </div>
+
+                                <!-- BMI Auto-Calculation Bar -->
+                                <div class="col-12">
+                                    <div class="p-2 bg-light rounded border d-flex justify-content-between align-items-center">
+                                        <span class="small text-muted">Calculated BMI: <strong id="bmiVal" class="text-dark">28.2</strong> kg/m²</span>
+                                        <span class="badge bg-warning text-dark" id="bmiBadge">Overweight</span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mt-1">
+                                        <input class="form-check-input" type="checkbox" id="prevInjury" checked>
+                                        <label class="form-check-label small fw-semibold" for="prevInjury">Previous Knee Injury / Trauma</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mt-1">
+                                        <input class="form-check-input" type="checkbox" id="oaHistory">
+                                        <label class="form-check-label small fw-semibold" for="oaHistory">Family History of OA</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Clinical Symptoms Assessment -->
+                    <div class="card-healthcare">
+                        <div class="card-header">
+                            <span><i class="bi bi-clipboard2-pulse me-2 text-primary"></i>2. Clinical Symptoms</span>
+                        </div>
+                        <div class="card-body">
+                            <!-- Pain Slider (0-10) -->
+                            <div class="pain-score-container mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label for="painRange" class="fw-bold mb-0">Knee Pain Score (0-10)</label>
+                                    <span class="pain-display bg-warning text-dark" id="painBadge">6 / 10</span>
+                                </div>
+                                <input type="range" class="form-range" min="0" max="10" step="1" value="6" id="painRange">
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span>0: No Pain</span>
+                                    <span>5: Moderate</span>
+                                    <span>10: Severe Unbearable</span>
+                                </div>
+                            </div>
+
+                            <!-- Symptom Checkboxes -->
+                            <h6 class="fw-bold small text-uppercase text-muted mb-2">Reported Joint Signs</h6>
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkMorningStiff" checked>
+                                        <label class="form-check-label small" for="chkMorningStiff">Morning Stiffness (&lt; 30m)</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkJointStiff" checked>
+                                        <label class="form-check-label small" for="chkJointStiff">Joint Inactivity Stiffness</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkSwelling">
+                                        <label class="form-check-label small" for="chkSwelling">Joint Swelling / Effusion</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkBending" checked>
+                                        <label class="form-check-label small" for="chkBending">Difficulty Bending Knee</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h6 class="fw-bold small text-uppercase text-muted mb-2">Functional Mobility Difficulties</h6>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkWalking" checked>
+                                        <label class="form-check-label small" for="chkWalking">Walking Difficulty</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkStairs" checked>
+                                        <label class="form-check-label small" for="chkStairs">Difficulty Climbing Stairs</label>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="chkStanding">
+                                        <label class="form-check-label small" for="chkStanding">Difficulty Standing Prolonged</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: X-Ray & Movement Video Uploads -->
+                <div class="col-lg-6">
+
+                 <!-- Card 3: Live Knee X-Ray Input -->
+<div class="card-healthcare">
+    <div class="card-header">
+        <span><i class="bi bi-file-earmark-medical me-2 text-primary"></i>3. Live Knee X-Ray Input</span>
+        <span class="badge bg-light text-dark border">Live Hardware Feed</span>
+    </div>
+    <div class="card-body">
+        <div class="upload-dropzone" id="xrayDropzone">
+            <i class="bi bi-cloud-arrow-up upload-icon"></i>
+            <h6 class="fw-bold mb-1">Real-time knee X-ray received from connected hardware</h6>
+            <p class="text-muted small mb-2">Prototype mode: this area represents the live hardware X-ray feed</p>
+            <input type="file" id="xrayInput" accept=".jpg,.jpeg,.png" style="display: none;" required>
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('xrayInput').click()">Select X-Ray File</button>
+        </div>
+    </div>
+</div>
+
+<!-- Card 4: Live Knee Movement / Gait Input -->
+<div class="card-healthcare">
+    <div class="card-header">
+        <span><i class="bi bi-camera-video me-2 text-primary"></i>4. Live Knee Movement / Gait Input</span>
+        <span class="badge bg-light text-dark border">Live Hardware Feed</span>
+    </div>
+    <div class="card-body">
+        <div class="upload-dropzone" id="videoDropzone">
+            <i class="bi bi-film upload-icon"></i>
+            <h6 class="fw-bold mb-1">Real-time gait/movement video received from connected hardware</h6>
+            <p class="text-muted small mb-2">Prototype mode: this area represents the live hardware gait feed</p>
+            <input type="file" id="videoInput" accept=".mp4,.mov,.avi" style="display: none;" required>
+            <button type="button" class="btn btn-outline-primary btn-sm" onclick="document.getElementById('videoInput').click()">Select Video File</button>
+        </div>
+    </div>
+</div>
+
+                    <!-- Primary Action Button -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold py-3 shadow-sm" id="btnStartScreening">
+                            <i class="bi bi-cpu me-2"></i>Start AI Screening
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="btnResetForm">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset All Fields
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </form>
+
+        <!-- Dynamic Staged Analysis Animation Overlay Modal -->
+        <div class="modal fade" id="analysisModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-body text-center p-4">
+                        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <h4 class="fw-bold text-primary mb-1">Screening In Progress</h4>
+                        <p class="text-muted small mb-4">Processing multimodal radiological, functional, and clinical data</p>
+
+                        <!-- Staged Stepper Indicators -->
+                        <div class="text-start mx-auto" style="max-width: 320px;">
+                            <div class="stepper-item active" id="step1">
+                                <div class="stepper-icon"><i class="bi bi-image"></i></div>
+                                <span>Analyzing X-Ray...</span>
+                            </div>
+                            <div class="stepper-item" id="step2">
+                                <div class="stepper-icon"><i class="bi bi-play-btn"></i></div>
+                                <span>Analyzing Movement...</span>
+                            </div>
+                            <div class="stepper-item" id="step3">
+                                <div class="stepper-icon"><i class="bi bi-file-earmark-medical"></i></div>
+                                <span>Combining Clinical Information...</span>
+                            </div>
+                            <div class="stepper-item" id="step4">
+                                <div class="stepper-icon"><i class="bi bi-diagram-3"></i></div>
+                                <span>Generating Screening Result...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Results & Healthcare Worker Review Section (Appears after screening) -->
+        <section id="resultsSection" class="mt-5" style="display: none;">
+            
+            <!-- Result Main Banner -->
+            <div class="result-header-card">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <span class="badge bg-light text-dark px-3 py-1 mb-2">AI SCREENING RESULT</span>
+                        <h2 class="h3 fw-bold mb-0" id="resPatientSummary">Patient ID: OA-2026-0001</h2>
+                    </div>
+                    <div class="text-end">
+                        <span class="small text-light d-block">Overall AI Screening</span>
+                        <div class="risk-level-badge danger" id="resOverallRiskBadge">Higher Risk</div>
+                    </div>
+                </div>
+                <div class="d-flex gap-4 small text-light flex-wrap border-top border-light border-opacity-25 pt-2">
+                    <div>Patient Name: <strong id="resName">Demo Patient</strong></div>
+                    <div>Age: <strong id="resAge">55</strong></div>
+                    <div>Target Joint: <strong>Knee (Bilateral / Unilateral)</strong></div>
+                    <div>Screening Date: <strong id="resTimestamp">--</strong></div>
+                </div>
+            </div>
+
+            <!-- 3 Assessment Columns: X-Ray, Movement, Clinical -->
+            <div class="row g-3 mb-4">
+                
+                <!-- X-Ray Assessment Card -->
+                <div class="col-md-4">
+                    <div class="assessment-pill">
+                        <h5><i class="bi bi-x-diamond me-1 text-primary"></i>X-Ray Assessment</h5>
+                        <div class="assessment-metric">
+                            <span class="label">Image Quality:</span>
+                            <span class="value" id="resXrayQuality">Good</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Abnormality:</span>
+                            <span class="value text-danger" id="resXrayAbnormality">Detected</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Estimated Severity:</span>
+                            <span class="value" id="resXraySeverity">Moderate</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Model Confidence:</span>
+                            <span class="value text-primary" id="resXrayConfidence">82%</span>
+                        </div>
+                        <div class="mt-2 pt-2 border-top small text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Prototype computer vision feature indication.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movement Assessment Card -->
+                <div class="col-md-4">
+                    <div class="assessment-pill">
+                        <h5><i class="bi bi-person-walking me-1 text-primary"></i>Movement Assessment</h5>
+                        <div class="assessment-metric">
+                            <span class="label">Movement Quality:</span>
+                            <span class="value" id="resGaitQuality">Fair</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Bilateral Asymmetry:</span>
+                            <span class="value text-warning" id="resGaitAsymmetry">15%</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Movement Risk:</span>
+                            <span class="value" id="resGaitRisk">Moderate</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Cadence Consistency:</span>
+                            <span class="value" id="resGaitConsistency">78%</span>
+                        </div>
+                        <div class="mt-2 pt-2 border-top small text-muted">
+                            <i class="bi bi-info-circle me-1"></i>OpenCV kinematic feature extraction.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clinical Assessment Card -->
+                <div class="col-md-4">
+                    <div class="assessment-pill">
+                        <h5><i class="bi bi-heart-pulse me-1 text-primary"></i>Clinical Assessment</h5>
+                        <div class="assessment-metric">
+                            <span class="label">Pain Score:</span>
+                            <span class="value text-danger" id="resClinPain">6/10</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Morning Stiffness:</span>
+                            <span class="value" id="resClinStiffness">Present</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Walking Difficulty:</span>
+                            <span class="value" id="resClinWalking">Present</span>
+                        </div>
+                        <div class="assessment-metric">
+                            <span class="label">Calculated BMI:</span>
+                            <span class="value" id="resClinBmi">28.2</span>
+                        </div>
+                        <div class="mt-2 pt-2 border-top small text-muted">
+                            <i class="bi bi-info-circle me-1"></i>Self-reported patient symptomatology.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Multimodal Synthesis, Recommendations & Explanations -->
+            <div class="card card-healthcare mb-4">
+                <div class="card-header">
+                    <span><i class="bi bi-diagram-3-fill me-2 text-primary"></i>Multimodal Risk Synthesis &amp; Recommendations</span>
+                    <span class="badge bg-primary">Score: <span id="resRiskScore">--</span>/100</span>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-7">
+                            <h6 class="fw-bold mb-2 text-primary">Contributing Clinical &amp; Objective Factors</h6>
+                            <ul id="resExplanationsList" class="small mb-3"></ul>
+
+                            <h6 class="fw-bold mb-2 text-success">Recommended Clinical Next Steps</h6>
+                            <div class="p-3 bg-light rounded border">
+                                <p class="fw-bold text-dark mb-1" id="resPrimaryRec"><i class="bi bi-check2-circle text-primary me-2"></i>Further clinical evaluation recommended.</p>
+                                <ul id="resRecommendationsList" class="small mb-0 ps-3"></ul>
+                            </div>
+                        </div>
+
+                        <!-- Healthcare Worker Review Card -->
+                        <div class="col-md-5">
+                            <div class="verification-card">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="fw-bold mb-0">Healthcare Worker Review</h6>
+                                    <span class="status-badge pending" id="badgeVerifStatus">PENDING</span>
+                                </div>
+                                <p class="text-muted small mb-3">Review AI-assisted multimodal screening outputs and confirm action.</p>
+
+                                <div class="mb-3">
+                                    <label class="form-label small fw-bold">Healthcare Worker Comments</label>
+                                    <textarea class="form-control form-control-sm" id="hwComments" rows="3" placeholder="Enter clinical notes, observational remarks, or follow-up instructions..."></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2" id="verificationCardActions">
+                                    <button type="button" class="btn btn-outline-success btn-sm fw-bold" id="btnAcceptResult">
+                                        <i class="bi bi-check-lg me-1"></i>Accept Result (Reviewed)
+                                    </button>
+                                    <button type="button" class="btn btn-outline-warning text-dark btn-sm fw-bold" id="btnFlagReview">
+                                        <i class="bi bi-flag me-1"></i>Flag for Review
+                                    </button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm fw-bold" id="btnReferClinician">
+                                        <i class="bi bi-hospital me-1"></i>Refer to Clinician
+                                    </button>
+                                </div>
+
+                                <div id="verifFeedback" class="small text-success mt-2 fw-semibold" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Digital Report Action Bar -->
+            <div class="card card-healthcare">
+                <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-1">Digital Screening Report</h5>
+                        <p class="text-muted small mb-0">Generate, review, and print a formal clinical summary document.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-primary" id="btnGenerateReport">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>View Digital Report
+                        </button>
+                        <button type="button" class="btn btn-outline-dark" id="btnPrintDirect">
+                            <i class="bi bi-printer me-1"></i>Print Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Digital Report Modal -->
+        <div class="modal fade" id="reportModal" tabindex="-1">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-file-text me-2 text-primary"></i>Digital Screening Report Preview</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-0">
+                        <iframe id="reportFrame" style="width: 100%; height: 75vh; border: none;"></iframe>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="btnModalPrint"><i class="bi bi-printer me-1"></i>Print Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Medical Footer -->
+    <footer class="bg-white border-top py-3 mt-auto">
+        <div class="container text-center text-muted small">
+            <div>AI-Based Multimodal Osteoarthritis Screening and Risk Assessment System &bull; Research Demonstration</div>
+            <div class="text-danger mt-1">Disclaimer: Prototype for demonstration only. AI results are not a medical diagnosis. Further clinical evaluation recommended.</div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom Frontend Application Logic -->
+    <script src="js/app.js"></script>
+</body>
+</html>
